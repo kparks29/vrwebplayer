@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang='en'>
+   <head>
+      <meta charset='utf-8' />
+      <title>Sample HTML5 Media Player</title>
+      <link href='media-player.css' rel='stylesheet' />
+      <script src='media-player.js'></script>
+   </head>
+   <body>
+      <div id='media-player'>
+         <video id='media-video'>
+            <source src='parrots.mp4' type='video/mp4'>
+            <source src='parrots.webm' type='video/webm'>
+         </video>
+         <div id='media-controls'>
+            <button id='play-pause-button' class='play' title='play' onclick='togglePlayPause();'>Play</button>
+            <button id='stop-button' class='stop' title='stop' onclick='stopPlayer();'>Stop</button>
+            <button id='volume-inc-button' class='volume-plus' title='increase volume' onclick='changeVolume("+");'>Increase volume</button>
+            <button id='volume-dec-button' class='volume-minus' title='decrease volume' onclick='changeVolume("-");'>Decrease volume</button>
+            <button id='mute-button' class='mute' title='mute' onclick='toggleMute();'>Mute</button>
+            <button id='replay-button' class='replay' title='replay' onclick='replayMedia();'>Replay</button>
+            <button id="fullscreen-button" class="fullscreen" title="fullscreen" onclick="fullScreen();">FullScreen</button>
+            <progress id='progress-bar' min='0' max='100' value='0'>0% played</progress>
+         </div>
+         <div id='media-play-list'>
+            <h2>Play list</h2>
+            <ul id='play-list'>
+               <li>
+                  <span class='play-item' onclick='loadVideo("parrots.webm", "parrots.mp4");'>Parrots</span>
+               </li>
+               <li>
+                  <span class='play-item' onclick='loadVideo("kitten.mp4");'>Kitten</span>
+               </li>
+            </ul>
+         </div>
+         <div>
+            Watch your own: <input id="url" type="text">    <button id="submit" onclick="outsideVid();">Submit</button>
+         </div>
+      </div>
+   </body>
+</html>
+
+
+
+
+<!-- 
+<object id="flashObj" width="940" height="528" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,47,0">
+   <param name="movie" value="http://c.brightcove.com/services/viewer/federated_f9?isVid=1&isUI=1" />
+   <param name="bgcolor" value="#FFFFFF" />
+   <param name="flashVars" value="videoId=732529077001&linkBaseURL=http%3A%2F%2Fsupport.brightcove.com%2Fen%2Fvideo-cloud%2Ftraining-videos%2Fnavigating-video-cloud-studio&playerID=1134499652001&playerKey=AQ~~,AAAABLsQgFE~,jGXrTxeVLAThSRK-KmTFok8sEm6B69RT&domain=embed&dynamicStreaming=true" />
+   <param name="base" value="http://admin.brightcove.com" />
+   <param name="seamlesstabbing" value="false" />
+   <param name="allowFullScreen" value="true" />
+   <param name="swLiveConnect" value="true" />
+   <param name="allowScriptAccess" value="always" />
+   <embed src="http://c.brightcove.com/services/viewer/federated_f9?isVid=1&isUI=1" bgcolor="#FFFFFF" flashVars="videoId=732529077001&linkBaseURL=http%3A%2F%2Fsupport.brightcove.com%2Fen%2Fvideo-cloud%2Ftraining-videos%2Fnavigating-video-cloud-studio&playerID=1134499652001&playerKey=AQ~~,AAAABLsQgFE~,jGXrTxeVLAThSRK-KmTFok8sEm6B69RT&domain=embed&dynamicStreaming=true" base="http://admin.brightcove.com" name="flashObj" width="940" height="528" seamlesstabbing="false" type="application/x-shockwave-flash" allowFullScreen="true" allowScriptAccess="always" swLiveConnect="true" pluginspage="http://www.macromedia.com/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash">
+   </embed>
+</object>
+
+<iframe src="//player.vimeo.com/video/88896418?badge=0" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen>
+</iframe> -->
