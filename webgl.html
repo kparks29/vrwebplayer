@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Video Player from Book</title>
+  <style type="text/css">
+  #progressBar {
+    border:1px solid #aaa;
+    color:#fff;
+    width:100%;
+    height:10%;
+  }
+  #played {
+    background-color:#aaa;
+    height:20px;
+    display:inline-block;
+    position: absolute;
+    bottom: 20px;
+  }
+  #controls {
+    position: absolute;
+    bottom: 0;
+  }
+  #vrwebplayer {
+    height: 90%;
+    width: 100%;
+    display: none;
+  }
+  #container {
+    height: 100%;
+    width: 100%;
+  }
+
+  div, video, body {
+    padding: 0;
+    margin: 0;
+  }
+  body {
+    overflow: hidden;
+  }
+  
+  </style>
+  <script src="vr.js"></script>
+  <script src="three.min.js"></script>
+  <script>
+
+  /* *********************************************************
+  **                     Parse URL String                   **
+  ********************************************************* */
+
+
+  function mp4Request() {
+    var query = window.location.search.substring(1).split("&");
+    var source;
+    var autoplay = false;
+    for (var i=0; i<query.length; i++){
+      var srcLocation = query[i].indexOf("src");
+      var autoplayLocation = query[i].indexOf("autoplay");
+      if (srcLocation != -1) {
+        source = query[i].split("=")[1];
+      }
+      if (autoplayLocation != -1){
+        autoplay = query[i].split("=")[1];
+      }
+
+    }
+
+    var response = '' +
+    '{ "query": [' +
+      '{"sources": ' +
+        '[ {"type": "video/mp4", "src": "' + source + '"},' + 
+          '{"type": "video/webm", "src": "parrots.webm"}' +
+        ']},' + 
+      '{"autoplay": "' + autoplay + '"}' +
+    ']}'
+    return response;
+  }
+
+
+
+  /* *********************************************************
+  **                   Build Video Player                   **
+  ********************************************************* */
+
+  document.addEventListener("DOMContentLoaded", function(){
+    var vidsource = mp4Request();
+    var container = document.createElement("div");
+    var video = document.createElement("video");
+    var source1 = document.createElement("source");
+    var source2 = document.createElement("source");
+    var progressBar = document.createElement("div");
+    var played = document.createElement("span");
+    var controls = document.createElement("div");
+    var rewind = document.createElement("button");
+    var playpause = document.createElement("button");
+    var fastforward = document.createElement("button");
+    var stop = document.createElement("button");
+    var volumeup = document.createElement("button");
+    var volumedown = document.createElement("button");
+    var mute = document.createElement("button");
+    var fullscreen = document.createElement("button");
+    
+    vidsource = JSON.parse(vidsource);
+
+    if (vidsource.query[1].autoplay == "true") {
+      video.setAttribute("autoplay", "");
+    }
+
+    container.setAttribute("id", "container");
+    video.setAttribute("controls","");
+    video.setAttribute("id", "vrwebplayer");
+    source1.setAttribute("src", vidsource.query[0].sources[0].src);
+    source1.setAttribute("type", vidsource.query[0].sources[0].type);
+    video.setAttribute("crossorigin", "anonymous");
+    source2.setAttribute("src", vidsource.query[0].sources[1].src);
+    source2.setAttribute("type", vidsource.query[0].sources[1].type);
+    progressBar.setAttribute("id", "progressBar");
+    played.setAttribute("id", "played");
+    controls.setAttribute("id", "controls");
+    rewind.setAttribute("id", "rewind");
+    rewind.setAttribute("title", "reverse");
+    rewind.innerHTML = "&laquo;";
+    playpause.setAttribute("id", "playpause");
+    playpause.setAttribute("title", "play");
+    playpause.innerHTML = "play";
+    fastforward.setAttribute("id", "fastforward");
+    fastforward.setAttribute("title", "fastforward");
+    fastforward.innerHTML = "&raquo;";
+    stop.setAttribute("id", "stop");
+    stop.setAttribute("title", "stop");
+    stop.innerHTML = "stop";
+    volumeup.setAttribute("id", "volumeup");
+    volumeup.setAttribute("title", "volumeup");
+    volumeup.innerHTML = "+";
+    volumedown.setAttribute("id", "volumedown");
+    volumedown.setAttribute("title", "volumedown");
+    volumedown.innerHTML = "-";
+    mute.setAttribute("id", "mute");
+    mute.setAttribute("title", "mute");
+    mute.innerHTML = "mute";
+    fullscreen.setAttribute("id", "fullscreen");
+    fullscreen.setAttribute("title", "fullscreen");
+    fullscreen.innerHTML = "fullscreen";
+
+    document.body.appendChild(container);
+    container.appendChild(video);
+    video.appendChild(source1);
+    video.appendChild(source2);
+    container.appendChild(progressBar);
+    progressBar.appendChild(played);
+    container.appendChild(controls);
+    controls.appendChild(rewind);
+    controls.appendChild(playpause);
+    controls.appendChild(fastforward);
+    controls.appendChild(stop);
+    controls.appendChild(volumeup);
+    controls.appendChild(volumedown);
+    controls.appendChild(mute);
+    controls.appendChild(fullscreen);
+
+
+    setUp();
+  }, false);
+
+
+
+
+    function setUp() {
+      //check to see if browser supports html5
+      var v = document.createElement("video");
+      if (v.play) {
+
+      }
+      else {
+        
+      }
+
+
+      /* *********************************************************
+      **                 Build Video Controls                   **
+      ********************************************************* */
+      //initializers
+      var video = document.getElementsByTagName("video")[0];
+      var stopButton = document.getElementById("stop");
+      var ppButton = document.getElementById("playpause");
+      var volumeUpButton = document.getElementById("volumeup");
+      var volumeDownButton = document.getElementById("volumedown");
+      var muteButton = document.getElementById("mute");
+      var rewindButton = document.getElementById("rewind");
+      var fastforwardButton = document.getElementById("fastforward");
+      var progressBar = document.getElementById("progressBar");
+      var fullscreen = document.getElementById("fullscreen");
+
+      //do not display default controls
+      video.controls = false;
+
+
+
+
+      /* *********************************************************
+      **                      Event Listeners                   **
+      ********************************************************* */
+      //click listeners
+      stopButton.addEventListener('click', stopVideo, false);
+      ppButton.addEventListener('click', togglePlay, false);
+      volumeUpButton.addEventListener('click', function() {
+        changeVolume("+");
+      }, false);
+      volumeDownButton.addEventListener('click', function() {
+        changeVolume("-");
+      }, false);
+      rewindButton.addEventListener('click', function(){
+        changePlaybackSpeed('-');
+      }, false);
+      fastforwardButton.addEventListener('click', function(){
+        changePlaybackSpeed('+');
+      }, false);
+      muteButton.addEventListener('click', toggleMute, false);
+      fullscreen.addEventListener('click', function(){
+        if (window.parent.document.getElementById("vrwebplayer").offsetWidth > 600) {
+          window.parent.document.getElementById("vrwebplayer").width = "600";
+          window.parent.document.getElementById("vrwebplayer").height = "320";
+        }
+        else {
+          window.parent.document.getElementById("vrwebplayer").width = "100%";
+          window.parent.document.getElementById("vrwebplayer").height = "100%";
+        }
+      }, false);
+
+      //video event listeners
+      video.addEventListener('play', function(){
+        ppButton.title = "pause";
+        ppButton.innerHTML = "pause";
+      }, false);
+      video.addEventListener('pause', function(){
+        ppButton.title = "play";
+        ppButton.innerHTML = "play";
+      }, false);
+      video.addEventListener('ended', this.pause, false);
+      video.addEventListener('volumechange', function(){
+        var mute = document.getElementById("mute");
+        var volume = Math.floor(video.volume * 10) / 10;
+        if (video.muted) {
+          mute.title = "unmute";
+          mute.innerHTML = "unmute";
+        }
+        else if (volume == 0) {
+          mute.title = "unmute";
+          mute.innerHTML = "unmute";
+        }
+        else {
+          mute.title = "mute";
+          mute.innerHTML = "mute";
+        }
+      }, false);
+      video.addEventListener('timeupdate', updateProgress, false);
+
+      //mouse listeners
+      progressBar.addEventListener('mouseup', function(e) {
+        setPlayPosition(e.pageX);
+      }, false);
+
+
+
+      //controls
+      function stopVideo() {
+        video.pause();
+        video.currentTime = 0;
+      }
+
+      function togglePlay() {
+        if (video.paused || video.ended){
+          if (video.ended) {
+            video.currentTime = 0;
+          }
+          video.play();
+        }
+        else {
+          video.pause();
+        }
+      }
+
+      function changeVolume(direction) {
+        var volume = Math.floor(video.volume * 10) / 10;
+        video.muted = false;
+        if (direction == "-") {
+          if (volume <= 0.1) {
+            video.volume = 0;
+          }
+          else {
+            video.volume -= 0.1;
+          }
+        }
+        else {
+          if (volume >= 0.9) {
+            video.volume = 1;
+          }
+          else {
+            video.volume += 0.1;
+          }
+        }
+      }
+
+      function toggleMute() {
+        var mute = document.getElementById("mute");
+        if (video.muted) {
+          video.muted = false;
+        }
+        else {
+          video.muted = true;
+        }
+      }
+
+      function updateProgress() {
+        var value = 0;
+        if (video.currentTime > 0) {
+          value = Math.floor((100 / video.duration) * video.currentTime);
+        }
+        document.getElementById("played").style.width = value + "%";
+      }
+
+      function changePlaybackSpeed(direction) {
+        if (!video.paused) {  
+          if (direction == "-") {
+            video.playbackRate -= 1;
+          }
+          else {
+            video.playbackRate += 1;
+          }
+        }
+        else {
+          if (direction == "-") {
+            video.currentTime -= 1;
+          }
+          else {
+            video.currentTime += 1;
+          }
+        }
+      }
+
+      function setPlayPosition(x) {
+        var value = (x - findPos(progressBar)).toFixed(2);
+        var timeToSet = ((video.duration / progressBar.offsetWidth).toFixed(2) * value).toFixed(2);
+        video.currentTime = timeToSet;
+      }
+
+      function findPos(obj) {
+        var currentLeft = 0;
+        if (obj.offsetParent) {
+          do {
+            currentLeft += obj.offsetLeft;
+          } while (obj = obj.offsetParent);
+        }
+        return currentLeft;
+      }
+
+      loadWebGL();
+    }
+
+    //**********************************************************//
+    //**********************************************************//
+    //**********************************************************//
+
+
+    function loadWebGL() {
+      var renderer;
+      var container = document.getElementById('container');
+      var windowWidth, windowHeight;
+      var mousePos = {
+        x: 0,
+        y: 0
+      };
+
+      // Set up tracking for mouse click
+      var mouseDown = 0;
+      document.body.onmousedown = function() { 
+        mouseDown=1;
+      }
+      document.body.onmouseup = function() {
+        mouseDown=0;
+      }
+      mousePos.x = 0;
+      mousePos.y = 0;
+
+      // Capture mouse move events
+      container.addEventListener('mousemove', function(evt) {
+        mousePos = getMousePos(container, evt);
+      }, false);
+
+      // Create video object      
+      var video = document.getElementById( 'vrwebplayer' );
+      
+      // Vectors for camera focal point
+      var camV1 = new THREE.Vector3( 100, 0, 0 );
+      var camV2 = new THREE.Vector3( -100, 0, 0 );
+
+      // // Create viewports
+      views = [
+        {
+          left: 0,
+          bottom: 0,
+          width: 0.5,
+          height: 1.0,
+          background: new THREE.Color().setRGB( 0.5, 0.5, 0.7 ),
+          eye: [ 100, 0, 0 ],
+          up: [ 0, 1, 0 ],
+          fov: 100,
+          updateCamera: function ( camera, scene, mouseX, mouseY ) {
+            camera.position.x += mouseX * 0.05;
+            camera.position.x = Math.max( Math.min( camera.position.x, 2000 ), -2000 );
+            camera.lookAt( camV1 );
+          }
+        },
+        { 
+          left: 0.5,
+          bottom: 0,
+          width: 0.5,
+          height: 1.0,
+          background: new THREE.Color().setRGB( 0.7, 0.5, 0.5 ),
+          eye: [ -100, 0, 0 ],
+          up: [ 0, 0, 1 ],
+          fov: 100,
+          updateCamera: function ( camera, scene, mouseX, mouseY ) {
+            camera.position.x -= mouseX * 0.05;
+            camera.position.x = Math.max( Math.min( camera.position.x, 2000 ), -2000 );
+            camera.lookAt( camV2 );
+          }
+        }
+      ];
+      
+      // // Create renderer
+      renderer = new THREE.WebGLRenderer( { antialias: true } );
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      container.appendChild( renderer.domElement );
+
+      // // Create cameras
+      for (var ii =  0; ii < views.length; ++ii ) {
+
+        var view = views[ii];
+        //camera = new THREE.PerspectiveCamera( view.fov, window.innerWidth / window.innerHeight, 1, 10000 );
+        camera = new THREE.OrthographicCamera( -50, 50, -65, 65, 1, 10000 );
+        camera.position.x = view.eye[ 0 ];
+        camera.position.y = view.eye[ 1 ];
+        camera.position.z = view.eye[ 2 ];
+        view.camera = camera;
+      }
+
+      // Set camera focus
+      views[0].camera.lookAt(camV1);
+      views[1].camera.lookAt(camV2);
+
+      // Create scene
+      scene = new THREE.Scene();
+
+      // Add light
+      var ambientLight = new THREE.AmbientLight(0xffffff);
+      scene.add(ambientLight);
+
+
+      // Create projection spheres
+      geometry1 = new THREE.SphereGeometry(100, 20, 20, 0, Math.PI, 0, Math.PI);
+
+      var image = document.createElement( 'canvas' );
+      image.width = 640; // 480
+      image.height = 404; //204
+      image.id = "canvas"
+
+      imageContext = image.getContext( '2d' );
+      
+      texture = new THREE.Texture( image );
+      texture.repeat.set( 1, 1 );
+      // texture.repeat.x = 0.5;
+
+      //Create material for video map
+      var material1 = new THREE.MeshBasicMaterial( { map: texture, overdraw: true, side: THREE.DoubleSide, transparent: true } );
+      screen1 = new THREE.Mesh(geometry1, material1);
+      screen1.position.x = 120;
+      screen1.rotation.y = Math.PI;
+      screen1.rotation.z = Math.PI;
+
+      geometry2 = new THREE.SphereGeometry(100, 20, 20, 0, Math.PI, 0, Math.PI);
+      
+
+      if( video.readyState === video.HAVE_ENOUGH_DATA ){
+        videoTexture.needsUpdate = true;
+      }
+      
+      screen2 = new THREE.Mesh(geometry1, material1);
+      screen2.position.x = -95;
+      screen2.rotation.y = Math.PI;
+      screen2.rotation.z = Math.PI;
+
+      // Add geometries to scene
+      scene.add(screen1);
+      scene.add(screen2);
+
+      // Render animation
+      animate();
+
+      function getMousePos(container, evt) {
+        var rect = container.getBoundingClientRect();
+        return {
+          x: evt.clientX - rect.left,
+          y: evt.clientY - rect.top
+        };
+      }
+
+
+      function updateSize() {
+ 
+        if ( windowWidth != window.innerWidth || windowHeight != window.innerHeight ) {
+
+          windowWidth  = window.innerWidth;
+          windowHeight = window.innerHeight;
+
+          renderer.setSize ( windowWidth, windowHeight );
+
+        }
+      }
+
+      function animate() {
+        render();
+        requestAnimationFrame( animate );
+      }
+
+      function render() {
+
+        updateSize();
+
+        // Update video frame when video texture has loaded enough frame data
+        if ( video.readyState === video.HAVE_ENOUGH_DATA ) {
+   
+          imageContext.drawImage( video, 0, 112, 200 * Math.PI, 175 );
+            if ( texture ) texture.needsUpdate = true;
+          
+          }
+
+        // Loop through viewports to update frame
+        for ( var ii = 0; ii < views.length; ++ii ) {
+
+          view = views[ii];
+          camera = view.camera;
+
+
+          // Draw into the specified viewport
+          var left   = Math.floor( windowWidth  * view.left );
+          var bottom = Math.floor( windowHeight * view.bottom );
+          var width  = Math.floor( windowWidth  * view.width );
+          var height = Math.floor( windowHeight * view.height );
+          renderer.setViewport( left, bottom, width, height );
+          renderer.setScissor( left, bottom, width, height );
+          renderer.enableScissorTest ( true );
+          renderer.setClearColor( view.background );
+
+          camera.aspect = width / height;
+
+            vr.load();
+            var state = new vr.State();
+            function tick() {
+
+              //set up some variables that i have no idea what they are but they are needed
+              var w = 8;
+              var i0 = w * 0, i1 = w * 1, i2 = w * 2, i3 = w * 3;
+              var h = 12;
+              var y = 0;
+
+              // get the rotation info
+              vr.pollState(state)
+              y += h; screen1.rotation.y = (400 + (state.hmd.rotation[1] * 1000))/100;
+              y += h; screen2.rotation.y = (400 + (state.hmd.rotation[1] * 1000))/100;
+              
+            };
+          vr.requestAnimationFrame(tick);
+          renderer.render( scene, camera );
+        }
+
+      }
+
+    }
+
+    
+  </script>
+</head>
+<body>
+
+</body>
+</html>

@@ -1,0 +1,55 @@
+<html>
+<head>
+  <title></title>
+  <style type="text/css">
+    body {
+      background-color: black; 
+    }
+    canvas {
+      border: 1px solid green;
+      height: 320px;
+      width: 600px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+</body>
+  <script type="text/javascript">
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+    ctx.fillStyle="#FF0000";
+    
+    ctx.fillRect(20,20,150,100);
+    ctx.stroke();
+    var pixels = ctx.getImageData(0,0,canvas.width, canvas.height);
+    console.log(pixels);
+    console.log(pixels.data);
+    
+    
+    
+    // var pixels = context.getImageData(x, y, width, height);
+    // context.putImageData(pixels, x, y);
+    // pixels.data[(x+y*height)*4+c] = b;
+
+
+    var spherize = function(px,py) {
+      var x = px-width/2;
+      var y = py-height/2;
+      var r = Math.sqrt(x*x+y*y);
+      var maxr = width/2;
+      if (r>maxr) return {
+          'x':px,
+          'y':py
+      }
+      var a = Math.atan2(y,x);
+      var k = (r/maxr)*(r/maxr)*0.5+0.5;
+      var dx = Math.cos(a)*r*k;
+      var dy = Math.sin(a)*r*k;
+      return {
+          'x': dx+width/2,
+          'y': dy+height/2
+      }
+    }
+  </script>
+</html>

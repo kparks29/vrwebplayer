@@ -24,6 +24,10 @@
     height: 90%;
     width: 100%;
   }
+  #container {
+    height: 100%;
+    width: 100%;
+  }
   div, video, body {
     padding: 0;
     margin: 0;
@@ -33,8 +37,8 @@
   }
   
   </style>
-  
-  <script type="text/javascript">
+  <script src="three.min.js"></script>
+  <script>
 
   function mp4Request() {
     var query = window.location.search.substring(1).split("&");
@@ -64,9 +68,10 @@
   }
     document.addEventListener("DOMContentLoaded", function(){
       var vidsource = mp4Request();
+      var container = document.createElement("div");
       var video = document.createElement("video");
       var source1 = document.createElement("source");
-      // var source2 = document.createElement("source");
+      var source2 = document.createElement("source");
       var progressBar = document.createElement("div");
       var played = document.createElement("span");
       var controls = document.createElement("div");
@@ -84,14 +89,14 @@
         video.setAttribute("autoplay", "");
       }
 
+      container.setAttribute("id", "container");
       video.setAttribute("controls","");
-      video.setAttribute("id", "vrwebplayer")
-
+      video.setAttribute("id", "vrwebplayer");
+      // video.crossOrigin = "anonymous";
       source1.setAttribute("src", vidsource.query[0].sources[0].src);
       source1.setAttribute("type", vidsource.query[0].sources[0].type);
-      source1.crossOrigin = "anonymous"
-      // source2.setAttribute("src", vidsource.query[0].sources[1].src);
-      // source2.setAttribute("type", vidsource.query[0].sources[1].type);
+      source2.setAttribute("src", vidsource.query[0].sources[1].src);
+      source2.setAttribute("type", vidsource.query[0].sources[1].type);
       progressBar.setAttribute("id", "progressBar");
       played.setAttribute("id", "played");
       controls.setAttribute("id", "controls");
@@ -117,12 +122,13 @@
       mute.setAttribute("title", "mute");
       mute.innerHTML = "mute";
 
-      document.body.appendChild(video);
+      document.body.appendChild(container);
+      container.appendChild(video);
       video.appendChild(source1);
-      // video.appendChild(source2);
-      document.body.appendChild(progressBar);
+      video.appendChild(source2);
+      container.appendChild(progressBar);
       progressBar.appendChild(played);
-      document.body.appendChild(controls);
+      container.appendChild(controls);
       controls.appendChild(rewind);
       controls.appendChild(playpause);
       controls.appendChild(fastforward);
@@ -311,6 +317,14 @@
         }
         return currentLeft;
       }
+
+      loadWebGL();
+    }
+
+    function loadWebGL() {
+      var renderer;
+      var container = document.getElementById('container');
+
     }
 
     
